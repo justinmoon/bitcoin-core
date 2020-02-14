@@ -140,15 +140,11 @@ class Client {
 
   async command(...args) {
     let body;
-    let multiwallet;
     let [input, ...parameters] = args; // eslint-disable-line prefer-const
 
     const isBatch = Array.isArray(input);
 
     if (isBatch) {
-      multiwallet = _lodash.default.some(input, command => {
-        return _lodash.default.get(this.methods[command.method], 'features.multiwallet.supported', false) === true;
-      });
       body = input.map((method, index) => this.requester.prepare({
         method: method.method,
         parameters: method.parameters,
@@ -159,7 +155,6 @@ class Client {
         parameters = parameters[0];
       }
 
-      multiwallet = _lodash.default.get(this.methods[input], 'features.multiwallet.supported', false) === true;
       body = this.requester.prepare({
         method: input,
         parameters
@@ -169,7 +164,7 @@ class Client {
     return this.parser.rpc((await this.request.postAsync({
       auth: _lodash.default.pickBy(this.auth, _lodash.default.identity),
       body: JSON.stringify(body),
-      uri: `${multiwallet && this.wallet ? `/wallet/${this.wallet}` : '/'}`
+      uri: `/wallet/${this.wallet ? this.wallet : ''}`
     })));
   }
   /**

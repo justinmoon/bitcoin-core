@@ -121,15 +121,10 @@ class Client {
 
   async command(...args) {
     let body;
-    let multiwallet;
     let [input, ...parameters] = args; // eslint-disable-line prefer-const
     const isBatch = Array.isArray(input);
 
     if (isBatch) {
-      multiwallet = _.some(input, command => {
-        return _.get(this.methods[command.method], 'features.multiwallet.supported', false) === true;
-      });
-
       body = input.map((method, index) => this.requester.prepare({
         method: method.method,
         parameters: method.parameters,
@@ -139,15 +134,13 @@ class Client {
       if (this.hasNamedParametersSupport && parameters.length === 1 && _.isPlainObject(parameters[0])) {
         parameters = parameters[0];
       }
-
-      multiwallet = _.get(this.methods[input], 'features.multiwallet.supported', false) === true;
       body = this.requester.prepare({ method: input, parameters });
     }
 
     return this.parser.rpc(await this.request.postAsync({
       auth: _.pickBy(this.auth, _.identity),
       body: JSON.stringify(body),
-      uri: `${multiwallet && this.wallet ? `/wallet/${this.wallet}` : '/'}`
+      uri: `/wallet/${this.wallet ? this.wallet : ''}`
     }));
   }
 
