@@ -3,12 +3,12 @@
  * Module dependencies.
  */
 
+import { requestLogger, torRequestLogger } from './logging/request-logger';
 import Parser from './parser';
 import Requester from './requester';
 import _ from 'lodash';
 import debugnyan from 'debugnyan';
 import methods from './methods';
-import requestLogger from './logging/request-logger';
 import semver from 'semver';
 
 /**
@@ -101,7 +101,8 @@ class Client {
       };
     }, {});
 
-    const request = requestLogger(logger);
+    // Use Tor if hostname is onion
+    const request = this.host.includes('.onion') ? torRequestLogger(logger) : requestLogger(logger);
 
     this.request = request.defaults({
       agentOptions: this.agentOptions,

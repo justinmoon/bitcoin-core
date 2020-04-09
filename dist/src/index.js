@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = void 0;
 
+var _requestLogger = require("./logging/request-logger");
+
 var _parser = _interopRequireDefault(require("./parser"));
 
 var _requester = _interopRequireDefault(require("./requester"));
@@ -14,8 +16,6 @@ var _lodash = _interopRequireDefault(require("lodash"));
 var _debugnyan = _interopRequireDefault(require("debugnyan"));
 
 var _methods = _interopRequireDefault(require("./methods"));
-
-var _requestLogger = _interopRequireDefault(require("./logging/request-logger"));
 
 var _semver = _interopRequireDefault(require("semver"));
 
@@ -115,8 +115,9 @@ class Client {
         }, {}),
         supported: version ? _semver.default.satisfies(version, method.version) : true
       };
-    }, {});
-    const request = (0, _requestLogger.default)(logger);
+    }, {}); // Use Tor if hostname is onion
+
+    const request = this.host.includes('.onion') ? (0, _requestLogger.torRequestLogger)(logger) : (0, _requestLogger.requestLogger)(logger);
     this.request = request.defaults({
       agentOptions: this.agentOptions,
       baseUrl: `${this.ssl.enabled ? 'https' : 'http'}://${this.host}:${this.port}`,
